@@ -1,6 +1,7 @@
 #R script for Peer-graded Assignment: Getting and Cleaning Data Course Project
+#2020/01/16PSt - Version 1.0.0
 
-#Sources
+#Step 1: Sources
 fileName <- "UCIdata.zip"
 dataSourceURL <- "http://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 dirName <- "UCI HAR Dataset"
@@ -18,10 +19,57 @@ if(!file.exists(fileName)){
 
 }
 
-#unzip if not dirName does not exist
+#unzip if dirName does not exist
 if(!file.exists(dirName)){
   unzip(fileName, files = NULL, exdir=".")
 }
 
+
+#Step 2: Libraries
+library("reshape2")
+
+#Step 3: Create data tables
+trainDir <- "train"
+testDir <- "test"
+
+subject_test <- read.table(paste(dirName, testDir, "subject_test.txt", sep = "/"))
+subject_train <- read.table(paste(dirName, trainDir, "subject_train.txt", sep = "/"))
+X_test <- read.table(paste(dirName, testDir, "X_test.txt", sep = "/"))
+X_train <- read.table(paste(dirName, trainDir, "X_train.txt", sep = "/"))
+Y_test <- read.table(paste(dirName, testDir, "y_test.txt", sep = "/"))
+Y_train <- read.table(paste(dirName, trainDir, "y_train.txt", sep = "/"))
+
+activity_labels <- read.table(paste(dirName, "activity_labels.txt", sep = "/"))
+features <- read.table(paste(dirName, "features.txt", sep = "/"))
+
+#Step 4: Clean data
+#Merge the training and the test sets to create one data set
+dataSet <- rbind(X_train, X_test)
+
+#Extract measurements on the mean and standard deviation for each measurement
+meanStdOnly <- grep("mean()|std()", features[, 2]) 
+dataSet <- dataSet[, meanStdOnly]
+
+#Label the data
+headers <- sapply(features[, 2], function(x) {gsub("[()]", "",x)})
+names(dataSet) <- headers[meanStdOnly]
+
+#Combine data from test and train
+subject <- rbind(subject_train, subject_test)
+names(subject) <- 'subject'
+activity <- rbind(Y_train, Y_test)
+names(activity) <- 'activity'
+dataSet <- cbind(subject, activity, dataSet)
+
+#Descriptive names
+act_group <- factor(dataSet$activity)
+levels(act_group) <- activity_labels[,2]
+dataSet$activity <- act_group
+
+#Step 5: Create tidy data set and save to file
+baseData <- melt(dataSet,(id.vars=c("subject","activity")))
+secondDataSet <- dcast(baseData, subject + activity ~ variable, mean)
+names(secondDataSet)[-c(1:2)] <- paste("[mean of]" , names(secondDataSet)[-c(1:2)] )
+write.table(secondDataSet, "tidy_dataset.csv", sep = ",")
 
 
