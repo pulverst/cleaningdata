@@ -68,8 +68,7 @@ dataSet$activity <- act_group
 
 #Step 5: Create tidy data set and save to file
 baseData <- melt(dataSet,(id.vars=c("subject","activity")))
-secondDataSet <- dcast(baseData, subject + activity ~ variable, mean)
-names(secondDataSet)[-c(1:2)] <- paste("[mean of]" , names(secondDataSet)[-c(1:2)] )
-write.table(secondDataSet, "tidy_dataset.csv", sep = ",")
+tidyDataSet <- dcast(baseData, subject + activity ~ variable, mean)
+write.table(tidyDataSet, "tidy_dataset.txt", sep = ",", row.names = FALSE)
 
 
