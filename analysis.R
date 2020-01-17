@@ -24,7 +24,6 @@ if(!file.exists(dirName)){
   unzip(fileName, files = NULL, exdir=".")
 }
 
-
 #Step 2: Libraries
 library("reshape2")
 
@@ -62,9 +61,9 @@ names(activity) <- 'activity'
 dataSet <- cbind(subject, activity, dataSet)
 
 #Descriptive names
-act_group <- factor(dataSet$activity)
-levels(act_group) <- activity_labels[,2]
-dataSet$activity <- act_group
+activity_group <- factor(dataSet$activity)
+levels(activity_group) <- activity_labels[,2]
+dataSet$activity <- activity_group
 
 #Step 5: Create tidy data set and save to file
 baseData <- melt(dataSet,(id.vars=c("subject","activity")))
